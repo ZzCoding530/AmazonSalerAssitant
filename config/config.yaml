@@ -1,0 +1,86 @@
+# Amazon AdGenie 配置
+# 密钥与敏感信息一律走环境变量，禁止硬编码。
+# 黄金检验标准：把 data_source 从 seed 改为 live，代码无需任何修改。
+
+data_source: seed          # seed | live  ← 切换此项代码无需修改
+
+service:
+  host: 0.0.0.0
+  port: 5000
+
+storage:
+  mysql:
+    dsn: ${MYSQL_DSN}      # 例如 mysql+pymysql://user:pass@127.0.0.1:3306/adgenie
+  redis:
+    url: ${REDIS_URL}      # 例如 redis://127.0.0.1:6379/0
+  milvus:
+    uri: ${MILVUS_URI}     # 例如 http://127.0.0.1:19530
+    collection: adgenie_materials
+
+crawler:
+  engine: auto             # scrapy | playwright | auto
+  rate_limit: 2            # 每秒请求数
+  download_delay: 0.5
+  autothrottle_enabled: true
+  autothrottle_target_concurrency: 1.0
+  retry_max: 3
+  retry_http_codes: [500, 502, 503, 504, 429]
+  backoff_factor: 2.0      # 指数退避基数
+  proxy_pool: ${PROXY_POOL_URL}
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+  circuit_breaker_failures: 5
+  circuit_breaker_timeout: 300
+
+llm:
+  writer:
+    provider: openai_compatible
+    base_url: ${WRITER_BASE_URL}
+    api_key: ${WRITER_API_KEY}
+    model: qwen-max
+    temperature: 0.7
+    timeout: 60
+  judge:
+    provider: openai_compatible
+    base_url: ${JUDGE_BASE_URL}
+    api_key: ${JUDGE_API_KEY}
+    model: glm-4-plus
+    temperature: 0         # 禁止修改，Judge 侧温度固定为 0
+    timeout: 60
+
+evidence:
+  max_reprompt: 2          # 白名单拒收后的最大重提次数
+  batch_freeze: true       # 分析输入按批次冻结
+
+scoring:
+  alignment:
+    jaccard_threshold: 0.0
+  persuasion:
+    rubric_version: "v1"
+  dual_scale: true         # 双标尺，禁止合并成单一总分
+
+calibration:
+  n_perturbed: 10
+  n_placebo: 10
+  permutation_iterations: 2000
+  random_seed: 42
+  min_detection_rate: 0.8
+  max_false_alarm_rate: 0.2
+
+retrieval:
+  coarse_filter: true      # 禁止设为 false
+  top_k_recall: 50
+  top_k_final: 10
+  weights:
+    semantic: 0.6
+    recency_decay: 0.25
+    sales_confidence: 0.15
+  recency_half_life_days: 90
+
+knowledge_base:
+  recency_threshold_days: 365   # 超过该天数视为过期素材，自动降权归档
+
+manifest:
+  freeze_on_score: true

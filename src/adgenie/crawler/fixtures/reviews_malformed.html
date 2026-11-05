@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Reviews (malformed)</title></head>
+<body>
+<div class="review-list">
+  <!-- 缺失关键字段：无 review-id -->
+  <div class="review" data-listing-id="L-1001">
+    <span class="rating">4.0 out of 5 stars</span>
+    <p class="review-content">missing review id</p>
+  </div>
+  <!-- 缺失评分 -->
+  <div class="review" data-review-id="R-021" data-listing-id="L-1001">
+    <span class="verified-purchase">Verified Purchase</span>
+    <p class="review-content">missing rating field</p>
+  </div>
+  <!-- 异常结构：无任何内容 -->
+  <div class="review" data-review-id="R-022" data-listing-id="L-1001"></div>
+  <!-- 正常 -->
+  <div class="review" data-review-id="R-023" data-listing-id="L-1001" data-asin="B000000001">
+    <span class="reviewer">reviewer-23</span>
+    <span class="rating">4.5 out of 5 stars</span>
+    <span class="verified-purchase">Verified Purchase</span>
+    <h3 class="review-title">OK</h3>
+    <p class="review-content">Charges from 0 to 80 percent in under an hour.</p>
+  </div>
+</div>
+</body>
+</html>
